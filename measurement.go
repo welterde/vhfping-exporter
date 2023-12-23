@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -100,4 +101,43 @@ func (m Measurements) GetRTTCount() int {
 		}
 	}
 	return count
+}
+
+func (m Measurements) GetMedian() float64 {
+	// special cases handling
+	if m.GetRTTCount() == 0 {
+		return math.NaN()
+	}
+	
+	// construct array of measurements absent invalid
+	dataValid := make([]float64, m.GetRTTCount())
+	ctr := 0
+	for i := range m.rtt {
+		if !m.lost[i] {
+			dataValid[ctr] = m.rtt[ctr]
+			ctr = ctr + 1
+		}
+	}
+	
+	return median(dataValid)
+}
+
+
+func median(data []float64) float64 {
+    dataCopy := make([]float64, len(data))
+    copy(dataCopy, data)
+
+    sort.Float64s(dataCopy)
+
+    var median float64
+    l := len(dataCopy)
+    if l == 0 {
+        return 0
+    } else if l%2 == 0 {
+        median = (dataCopy[l/2-1] + dataCopy[l/2]) / 2
+    } else {
+        median = dataCopy[l/2]
+    }
+
+    return median
 }

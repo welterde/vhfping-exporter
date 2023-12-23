@@ -8,7 +8,7 @@ import (
 	"time"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/VictoriaMetrics/metrics"
 )
 
 var opts struct {
@@ -30,7 +30,7 @@ func probeHandler(w http.ResponseWriter, r *http.Request) {
 	if targetParam == "" {
 		w.Header().Set("Content-Type", "text/html")
 		_, _ = w.Write([]byte(`<html>
-		    <head><title>Fping Exporter</title></head>
+		    <head><title>VM-H FPing Exporter</title></head>
 			<body>
 			<b>ERROR: missing target parameter</b>
 			</body>`))
@@ -46,8 +46,7 @@ func probeHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 
-	h := promhttp.HandlerFor(target.registry, promhttp.HandlerOpts{})
-	h.ServeHTTP(w, r)
+	target.vset.WritePrometheus(w)
 }
 
 func main() {
@@ -55,14 +54,16 @@ func main() {
 		os.Exit(0)
 	}
 	if opts.Version {
-		fmt.Printf("fping-exporter %v (commit %v, built %v)\n", buildVersion, buildCommit, buildDate)
+		fmt.Printf("vhfping-exporter %v (commit %v, built %v)\n", buildVersion, buildCommit, buildDate)
 		os.Exit(0)
 	}
 	if _, err := os.Stat(opts.Fping); os.IsNotExist(err) {
 		fmt.Printf("could not find fping at %q\n", opts.Fping)
 		os.Exit(1)
 	}
-	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/probe", probeHandler)
+	http.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
+		metrics.WritePrometheus(w, true)
+	})
 	log.Fatal(http.ListenAndServe(opts.Listen, nil))
 }

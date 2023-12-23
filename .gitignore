@@ -1,0 +1,7 @@
+/gomod2nix-template
+*~
+.direnv
+fping-exporter
+hfping-exporter
+vhfping-exporter
+dist
