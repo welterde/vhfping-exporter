@@ -42,7 +42,7 @@ func (t *Target) AddMeasurements(m Measurements) {
 	median_rtt := t.vset.GetOrCreateGauge("vhfping_median_rtt", nil)
 	median_rtt.Set(float64(m.GetMedian()))
 	rtt_hist := t.vset.GetOrCreateHistogram("vhfping_rtt")
-	rtt_hist.Reset()
+	//rtt_hist.Reset()
 	for i := range m.rtt {
 		if !m.lost[i] {
 			rtt_hist.Update(m.rtt[i])
