@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"sync"
+	"fmt"
+	"math"
 	
 	"github.com/VictoriaMetrics/metrics"
 )
@@ -42,10 +44,20 @@ func (t *Target) AddMeasurements(m Measurements) {
 	median_rtt := t.vset.GetOrCreateGauge("vhfping_median_rtt", nil)
 	median_rtt.Set(float64(m.GetMedian()))
 	rtt_hist := t.vset.GetOrCreateHistogram("vhfping_rtt")
-	//rtt_hist.Reset()
+	rtt_hist.Reset()
 	for i := range m.rtt {
 		if !m.lost[i] {
 			rtt_hist.Update(m.rtt[i])
+		} 
+	}
+	if opts.DumpRaw {
+		for i := range m.rtt {
+			rtt_raw_i := t.vset.GetOrCreateGauge(fmt.Sprintf("vhfping_raw_rtt{ping_idx=\"%d\"}", i), nil)
+			if !m.lost[i] {
+				rtt_raw_i.Set(m.rtt[i])
+			} else {
+				rtt_raw_i.Set(math.NaN())
+			}
 		}
 	}
 	t.Unlock()

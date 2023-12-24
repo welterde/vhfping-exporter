@@ -17,6 +17,7 @@ var opts struct {
 	Fping   string `short:"f" long:"fping"  description:"Fping binary path" value-name:"PATH" default:"/usr/bin/fping"`
 	Count   uint   `short:"c" long:"count"  description:"Number of pings to send at each period" value-name:"N" default:"20"`
 	Version bool   `long:"version" description:"Show version"`
+	DumpRaw bool   `long:"dump-raw" description:"Supply raw latency metrics in addition to histogram"`
 }
 
 var (
